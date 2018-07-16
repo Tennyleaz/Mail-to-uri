@@ -143,7 +143,7 @@ namespace Mail_to_uri
 
                     // 2nd test
                     subKeyPath = @"SOFTWARE\Classes\mailto\shell\open\command\";
-                    key = Registry.ClassesRoot.OpenSubKey(subKeyPath);
+                    key = Registry.LocalMachine.OpenSubKey(subKeyPath);
                     if (key != null)
                     {
                         objValue = key.GetValue("");
