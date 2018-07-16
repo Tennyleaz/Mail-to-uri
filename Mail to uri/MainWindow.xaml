@@ -19,5 +19,6 @@
         <TextBox Name="tbContent" Width="300" Height="60" Margin="2" AcceptsReturn="True">我是內文222</TextBox>
         <Button Name="btnSend" Click="btnSend_Click" Margin="2">Send</Button>
         <Button Name="btnTest" Click="btnTest_Click"  Margin="2">Test</Button>
+        <Button Name="btnTest2" Click="btnTest2_Click" Margin="2">Test2</Button>
     </StackPanel>
 </Window>

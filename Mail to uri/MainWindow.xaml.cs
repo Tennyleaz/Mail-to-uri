@@ -62,7 +62,7 @@ namespace Mail_to_uri
             /// Windows 8：HKEY_CLASSES_ROOT\mailto\ 會存在，但是下面不一定有東西
             /// Windows 10：HKEY_CLASSES_ROOT\mailto\shell\open\command\ 會存在，預設值可能是 C:\windows\system32\rundll32.exe
 
-            bool b = MailToUtility.IsMailClientInstalled();
+            bool b = MailToUtility.TestShellValue();
             if (!b)
             {
                 b = MailToUtility.TestOpenCommand();
@@ -73,6 +73,15 @@ namespace Mail_to_uri
             }
             else
                 MessageBox.Show("email client detected!");
+        }
+
+        private void btnTest2_Click(object sender, RoutedEventArgs e)
+        {
+
+            if (MailToUtility.IsMailClientInstalledRoot() || MailToUtility.IsMailClientInstalledForUser())
+                MessageBox.Show("email client detected!");
+            else
+                MessageBox.Show("no email client detected");
         }
     }
 }

@@ -19,24 +19,27 @@ namespace Mail_to_uri
             {
                 string strAddress = string.Join(";", vAddress);
                 if (!string.IsNullOrEmpty(strAddress))
-                    strURL += strAddress;
+                    strURL += Uri.EscapeUriString(strAddress);
             }
             strURL += @"?";
 
+            /// Encoding see:
+            /// https://stackoverflow.com/a/1517709/3576052
+
             // subject
             if (!string.IsNullOrEmpty(strSubject))
-                strURL += @"subject=" + System.Web.HttpUtility.UrlEncode(strSubject);
+                strURL += @"subject=" + Uri.EscapeDataString(strSubject);
 
             // body
             if (!string.IsNullOrEmpty(strBody))
-                strURL += @"&body=" + System.Web.HttpUtility.UrlEncode(strBody);
+                strURL += @"&body=" + Uri.EscapeDataString(strBody);
 
             // CC
             if (vCC != null && vCC.Count > 0)
             {
                 string strCC = string.Join(";", vCC);
                 if (!string.IsNullOrEmpty(strCC))
-                    strURL += @"&cc=" + strCC;
+                    strURL += @"&cc=" + Uri.EscapeUriString(strCC);
             }
 
             // BCC        
@@ -44,7 +47,7 @@ namespace Mail_to_uri
             {
                 string strBCC = string.Join(";", vBCC);
                 if (!string.IsNullOrEmpty(strBCC))
-                    strURL += @"&bcc=" + strBCC;
+                    strURL += @"&bcc=" + Uri.EscapeUriString(strBCC);
             }
 
             try
@@ -58,11 +61,121 @@ namespace Mail_to_uri
             return string.Empty;
         }
 
+        public static bool IsMailClientInstalledRoot()
+        {
+            bool bReturn = false;
+            bool bReturn2 = false;
+            string subKeyPath = @"mailto\shell\";
+            try
+            {
+                RegistryKey key = Registry.ClassesRoot.OpenSubKey(subKeyPath);
+                if (key != null)
+                {
+                    object objValue = key.GetValue("");
+                    if (objValue != null)
+                    {
+                        if (key.GetValueKind("") == RegistryValueKind.String)
+                        {
+                            string strValue = Convert.ToString(objValue);
+                            if (strValue != @"(value not set)")
+                                bReturn = true;
+                        }
+                    }
+                    key.Close();
+                    key.Dispose();
+                    key = null;
+                    objValue = null;
+
+                    // 2nd test
+                    subKeyPath = @"mailto\shell\open\command\";
+                    key = Registry.ClassesRoot.OpenSubKey(subKeyPath);
+                    if (key != null)
+                    {
+                        objValue = key.GetValue("");
+                        if (objValue != null)
+                        {
+                            if (key.GetValueKind("") == RegistryValueKind.String)
+                            {
+                                string strValue = Convert.ToString(objValue);
+                                if (strValue != null)
+                                {
+                                    if (strValue.IndexOf(@"C:\windows\system", StringComparison.OrdinalIgnoreCase) >= 0)
+                                        bReturn2 = false;
+                                    else
+                                        bReturn2 = true;
+                                }
+                            }
+                        }
+                        key.Close();
+                        key.Dispose();
+                        key = null;
+                    }
+                }
+            }
+            catch { }
+            return (bReturn || bReturn2);
+        }
+
+        public static bool IsMailClientInstalledForUser()
+        {
+            bool bReturn = false;
+            bool bReturn2 = false;
+            string subKeyPath = @"SOFTWARE\Classes\mailto\shell\";
+            try
+            {
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(subKeyPath);
+                if (key != null)
+                {
+                    object objValue = key.GetValue("");
+                    if (objValue != null)
+                    {
+                        if (key.GetValueKind("") == RegistryValueKind.String)
+                        {
+                            string strValue = Convert.ToString(objValue);
+                            if (strValue != @"(value not set)")
+                                bReturn = true;
+                        }
+                    }
+                    key.Close();
+                    key.Dispose();
+                    key = null;
+                    objValue = null;
+
+                    // 2nd test
+                    subKeyPath = @"SOFTWARE\Classes\mailto\shell\open\command\";
+                    key = Registry.ClassesRoot.OpenSubKey(subKeyPath);
+                    if (key != null)
+                    {
+                        objValue = key.GetValue("");
+                        if (objValue != null)
+                        {
+                            if (key.GetValueKind("") == RegistryValueKind.String)
+                            {
+                                string strValue = Convert.ToString(objValue);
+                                if (strValue != null)
+                                {
+                                    if (strValue.IndexOf(@"C:\windows\system", StringComparison.OrdinalIgnoreCase) >= 0)
+                                        bReturn2 = false;
+                                    else
+                                        bReturn2 = true;
+                                }
+                            }
+                        }
+                        key.Close();
+                        key.Dispose();
+                        key = null;
+                    }
+                }
+            }
+            catch { }
+            return (bReturn || bReturn2);
+        }
+
         /// <summary>
         /// Test if HKEY_CLASSES_ROOT\mailto\shell\ has value not set to (value not set)
         /// </summary>
         /// <returns></returns>
-        public static bool IsMailClientInstalled()
+        public static bool TestShellValue()
         {
             // HKEY_CLASSES_ROOT\mailto\shell\
             bool bReturn = false;
